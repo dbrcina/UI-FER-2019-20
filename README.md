@@ -1,2 +1,2 @@
-# UI-Labos
+# UI-Lab
 Laboratory assignments

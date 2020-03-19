@@ -25,7 +25,7 @@ public class BasicNode<S> {
 
     @Override
     public String toString() {
-        return "(" + state + ")";
+        return state.toString();
     }
 
     public static <T> String printPathTowardsNode(BasicNode<T> node) {

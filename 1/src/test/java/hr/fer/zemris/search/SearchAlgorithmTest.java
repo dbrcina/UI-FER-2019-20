@@ -14,21 +14,6 @@ public class SearchAlgorithmTest {
 
     @Test
     public void BFSTest() {
-        BasicNode<String> a1 = new BasicNode<>("A", null);
-        BasicNode<String> a2 = new BasicNode<>("A", a1);
-        BasicNode<String> b1 = new BasicNode<>("B", a1);
-        BasicNode<String> a3 = new BasicNode<>("A", a2);
-        BasicNode<String> b2 = new BasicNode<>("B", a2);
-        BasicNode<String> c1 = new BasicNode<>("C", b1);
-        BasicNode<String> d1 = new BasicNode<>("D", b1);
-        BasicNode<String> a4 = new BasicNode<>("A", a3);
-        BasicNode<String> b3 = new BasicNode<>("B", a3);
-        BasicNode<String> c2 = new BasicNode<>("C", b2);
-        BasicNode<String> d2 = new BasicNode<>("D", b2);
-        BasicNode<String> e = new BasicNode<>("E", c1);
-        BasicNode<String> f = new BasicNode<>("F", c1);
-        BasicNode<String> g = new BasicNode<>("G", d1);
-        BasicNode<String> h = new BasicNode<>("H", d1);
         Map<String, Set<String>> transitions = Map.of(
                 "A", new LinkedHashSet<>(List.of("A", "B")),
                 "B", new LinkedHashSet<>(List.of("C", "D")),
@@ -46,6 +31,27 @@ public class SearchAlgorithmTest {
         Assert.assertEquals("(A) =>\n(B) =>\n(D) =>\n(G)", BasicNode.printPathTowardsNode(result));
         Assert.assertEquals(4, result.depth() + 1);
         Assert.assertEquals(4, searchAlg.getStatesVisited());
+    }
+
+    @Test
+    public void UCSTest() {
+        Map<String, Set<StateCostPair<String>>> transitions = Map.of(
+                "A", new LinkedHashSet<>(List.of(new StateCostPair<>("B", 2.0), new StateCostPair<>("C", 3.0))),
+                "B", new LinkedHashSet<>(List.of(new StateCostPair<>("D", 5.0), new StateCostPair<>("E", 4.0))),
+                "C", new LinkedHashSet<>(List.of(new StateCostPair<>("F", 7.0), new StateCostPair<>("G", 2.0))),
+                "D", new LinkedHashSet<>(List.of(new StateCostPair<>("H", 20.0))),
+                "E", new LinkedHashSet<>(List.of(new StateCostPair<>("H", 30.0))),
+                "F", new LinkedHashSet<>(List.of(new StateCostPair<>("H", 4.0))),
+                "G", new LinkedHashSet<>(List.of(new StateCostPair<>("H", 50.0))),
+                "H", Set.of()
+        );
+        Function<String, Set<StateCostPair<String>>> succ = transitions::get;
+        Predicate<String> goal = s -> s.equals("H");
+        SearchAlgorithm<String, StateCostPair<String>> searchAlg = new UCS<>();
+        CostNode<String> result = (CostNode<String>) searchAlg.search("A", succ, goal).get();
+        Assert.assertEquals("(A) =>\n(C) =>\n(F) =>\n(H)", BasicNode.printPathTowardsNode(result));
+        Assert.assertEquals(4, result.depth() + 1);
+        Assert.assertEquals(14.0, result.getCost(), 1e-6);
     }
 
 }

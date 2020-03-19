@@ -9,6 +9,10 @@ public class CostNode<S> extends BasicNode<S> implements Comparable<CostNode<S>>
         this.cost = cost;
     }
 
+    public double getCost() {
+        return cost;
+    }
+
     @Override
     public CostNode<S> getParent() {
         return (CostNode<S>) super.getParent();
@@ -17,11 +21,6 @@ public class CostNode<S> extends BasicNode<S> implements Comparable<CostNode<S>>
     @Override
     public int compareTo(CostNode<S> other) {
         return Double.compare(this.cost, other.cost);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("(%s, %.2f)", getState(), cost);
     }
 
 }

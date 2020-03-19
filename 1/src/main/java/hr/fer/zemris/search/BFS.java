@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 /**
  * Breadth first search algorithm.
  */
-public class BFS<S> extends SearchAlgorithm<S> {
+public class BFS<S> extends SearchAlgorithm<S, S> {
 
     @Override
     public Optional<BasicNode<S>> search(S s0, Function<S, Set<S>> succ, Predicate<S> goal) {

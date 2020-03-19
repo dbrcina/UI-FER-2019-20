@@ -41,7 +41,7 @@ public class SearchAlgorithmTest {
         );
         Function<String, Set<String>> succ = transitions::get;
         Predicate<String> goal = s -> s.equals("G");
-        SearchAlgorithm<String> searchAlg = new BFS<>();
+        SearchAlgorithm<String, String> searchAlg = new BFS<>();
         BasicNode<String> result = searchAlg.search("A", succ, goal).get();
         Assert.assertEquals("(A) =>\n(B) =>\n(D) =>\n(G)", BasicNode.printPathTowardsNode(result));
         Assert.assertEquals(4, result.depth() + 1);

@@ -10,9 +10,10 @@ import java.util.function.Predicate;
  * method. It also keeps track about number of states visited which can be accessed through certain
  * getter.
  *
- * @param <S> type used in search algorithms, for example strings, numbers etc.
+ * @param <S> state type.
+ * @param <M> data model of successors.
  */
-public abstract class SearchAlgorithm<S> {
+public abstract class SearchAlgorithm<S, M> {
 
     private int statesVisited;
 
@@ -29,9 +30,10 @@ public abstract class SearchAlgorithm<S> {
      *
      * @param s0   initial state.
      * @param succ successor function.
-     * @param goal goal state(s).
-     * @return an optional value of {@link BasicNode}.
+     * @param goal goal predicate.
+     * @return an optional value of object that is or extends {@link BasicNode}.
      */
-    public abstract Optional<BasicNode<S>> search(S s0, Function<S, Set<S>> succ, Predicate<S> goal);
+    public abstract Optional<? extends BasicNode<S>> search(
+            S s0, Function<S, Set<M>> succ, Predicate<S> goal);
 
 }

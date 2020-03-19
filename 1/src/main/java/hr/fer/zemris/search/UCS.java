@@ -12,6 +12,8 @@ public class UCS<S> extends SearchAlgorithm<S, StateCostPair<S>> {
     @Override
     public Optional<CostNode<S>> search(
             S s0, Function<S, Set<StateCostPair<S>>> succ, Predicate<S> goal) {
+        System.out.println("Running ucs:");
+        statesVisited = 1;
         // prepare open and closed
         Queue<CostNode<S>> open = new PriorityQueue<>();
         Set<S> closed = new HashSet<>();
@@ -23,7 +25,7 @@ public class UCS<S> extends SearchAlgorithm<S, StateCostPair<S>> {
             CostNode<S> n = open.remove();
             if (goal.test(n.getState())) return Optional.of(n);
             closed.add(n.getState());
-            setStatesVisited(closed.size());
+            statesVisited++;
 
             // go through all successors
             for (StateCostPair<S> successor : succ.apply(n.getState())) {

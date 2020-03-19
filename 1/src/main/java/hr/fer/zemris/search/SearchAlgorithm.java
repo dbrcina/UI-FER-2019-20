@@ -15,14 +15,10 @@ import java.util.function.Predicate;
  */
 public abstract class SearchAlgorithm<S, M> {
 
-    private int statesVisited;
+    protected int statesVisited;
 
     public int getStatesVisited() {
         return statesVisited;
-    }
-
-    protected void setStatesVisited(int statesVisited) {
-        this.statesVisited = statesVisited;
     }
 
     /**

@@ -1,4 +1,4 @@
-package hr.fer.zemris.search;
+package hr.fer.zemris.search.structure;
 
 public class BasicNode<S> {
 

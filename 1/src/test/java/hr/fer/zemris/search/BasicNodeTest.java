@@ -1,5 +1,6 @@
 package hr.fer.zemris.search;
 
+import hr.fer.zemris.search.structure.BasicNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,9 +11,9 @@ public class BasicNodeTest {
         BasicNode<String> a = new BasicNode<>("A", null);
         BasicNode<String> b = new BasicNode<>("B", a);
         BasicNode<String> d = new BasicNode<>("D", b);
-        Assert.assertEquals("(A) =>\n(B) =>\n(D)", BasicNode.printPathTowardsNode(d));
-        Assert.assertEquals("(A)", BasicNode.printPathTowardsNode(a));
-        Assert.assertEquals("(A) =>\n(B)", BasicNode.printPathTowardsNode(b));
+        Assert.assertEquals("A =>\nB =>\nD", BasicNode.printPathTowardsNode(d));
+        Assert.assertEquals("A", BasicNode.printPathTowardsNode(a));
+        Assert.assertEquals("A =>\nB", BasicNode.printPathTowardsNode(b));
     }
 
     @Test

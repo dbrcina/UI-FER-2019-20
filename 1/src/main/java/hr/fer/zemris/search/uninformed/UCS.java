@@ -1,4 +1,8 @@
-package hr.fer.zemris.search;
+package hr.fer.zemris.search.uninformed;
+
+import hr.fer.zemris.search.structure.CostNode;
+import hr.fer.zemris.search.SearchAlgorithm;
+import hr.fer.zemris.search.structure.StateCostPair;
 
 import java.util.*;
 import java.util.function.Function;
@@ -12,8 +16,6 @@ public class UCS<S> extends SearchAlgorithm<S, StateCostPair<S>> {
     @Override
     public Optional<CostNode<S>> search(
             S s0, Function<S, Set<StateCostPair<S>>> succ, Predicate<S> goal) {
-        System.out.println("Running ucs:");
-        statesVisited = 1;
         // prepare open and closed
         Queue<CostNode<S>> open = new PriorityQueue<>();
         Set<S> closed = new HashSet<>();
@@ -25,7 +27,7 @@ public class UCS<S> extends SearchAlgorithm<S, StateCostPair<S>> {
             CostNode<S> n = open.remove();
             if (goal.test(n.getState())) return Optional.of(n);
             closed.add(n.getState());
-            statesVisited++;
+            setStatesVisited(closed.size());
 
             // go through all successors
             for (StateCostPair<S> successor : succ.apply(n.getState())) {
@@ -50,6 +52,7 @@ public class UCS<S> extends SearchAlgorithm<S, StateCostPair<S>> {
                 }
 
                 // insert successor into open collection if path to it is cheaper
+                // or if successor doesn't exist in open collection
                 if (successorIsCheaper) {
                     open.add(new CostNode<>(successor.getState(), n, successorCost));
                 }

@@ -1,8 +1,7 @@
 package hr.fer.zemris.ui.util;
 
-import hr.fer.zemris.search.StateCostPair;
-import hr.fer.zemris.ui.statesearch.StateSearchDataModel;
-import hr.fer.zemris.ui.statesearch.StateSearchSimulation;
+import hr.fer.zemris.search.structure.StateCostPair;
+import hr.fer.zemris.ui.uninformed.UninformedSearchDataModel;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,21 +11,21 @@ import java.util.stream.Collectors;
 
 public class FileParser {
 
-    public static StateSearchDataModel parseStateSearchFile(Path file) {
+    public static UninformedSearchDataModel parseStateSearchFile(Path file) throws IOException {
         List<String> lines = null;
         try {
             lines = Files.readAllLines(file).stream()
                     .filter(l -> !l.equals("#"))
                     .collect(Collectors.toCollection(ArrayList::new));
         } catch (IOException e) {
-            StateSearchSimulation.exit("Error occured while reading from file.");
+            throw new IOException("Error occured while reading from file.");
         }
 
-        StateSearchDataModel model = new StateSearchDataModel();
+        UninformedSearchDataModel model = new UninformedSearchDataModel();
         // initial state
         model.setInitialState(lines.get(0));
         // goal states
-        model.setGoalStates(Set.of(lines.get(1).split("\\s+")));
+        model.setGoalStates(new LinkedHashSet<>(Arrays.asList(lines.get(1).split("\\s+"))));
 
         // find all transitions
         Map<String, Set<StateCostPair<String>>> transitions = new HashMap<>();
@@ -47,7 +46,7 @@ public class FileParser {
                         String[] succParts = successor.split(",");
                         return new StateCostPair<>(succParts[0], Double.parseDouble(succParts[1]));
                     })
-                    .collect(Collectors.toUnmodifiableSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
             transitions.put(state, successors);
         }
         model.setTransitions(transitions);

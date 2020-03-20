@@ -1,5 +1,10 @@
 package hr.fer.zemris.search;
 
+import hr.fer.zemris.search.structure.BasicNode;
+import hr.fer.zemris.search.structure.CostNode;
+import hr.fer.zemris.search.structure.StateCostPair;
+import hr.fer.zemris.search.uninformed.BFS;
+import hr.fer.zemris.search.uninformed.UCS;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,7 +33,7 @@ public class SearchAlgorithmTest {
         Predicate<String> goal = s -> s.equals("G");
         SearchAlgorithm<String, String> searchAlg = new BFS<>();
         BasicNode<String> result = searchAlg.search("A", succ, goal).get();
-        Assert.assertEquals("(A) =>\n(B) =>\n(D) =>\n(G)", BasicNode.printPathTowardsNode(result));
+        Assert.assertEquals("A =>\nB =>\nD =>\nG", BasicNode.printPathTowardsNode(result));
         Assert.assertEquals(4, result.depth() + 1);
         Assert.assertEquals(4, searchAlg.getStatesVisited());
     }
@@ -49,7 +54,7 @@ public class SearchAlgorithmTest {
         Predicate<String> goal = s -> s.equals("H");
         SearchAlgorithm<String, StateCostPair<String>> searchAlg = new UCS<>();
         CostNode<String> result = (CostNode<String>) searchAlg.search("A", succ, goal).get();
-        Assert.assertEquals("(A) =>\n(C) =>\n(F) =>\n(H)", BasicNode.printPathTowardsNode(result));
+        Assert.assertEquals("A =>\nC =>\nF =>\nH", BasicNode.printPathTowardsNode(result));
         Assert.assertEquals(4, result.depth() + 1);
         Assert.assertEquals(14.0, result.getCost(), 1e-6);
     }

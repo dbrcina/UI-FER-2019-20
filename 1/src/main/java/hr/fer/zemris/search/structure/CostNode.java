@@ -1,4 +1,4 @@
-package hr.fer.zemris.search;
+package hr.fer.zemris.search.structure;
 
 public class CostNode<S> extends BasicNode<S> implements Comparable<CostNode<S>> {
 

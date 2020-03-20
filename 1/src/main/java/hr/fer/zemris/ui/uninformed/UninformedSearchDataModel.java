@@ -1,11 +1,11 @@
-package hr.fer.zemris.ui.statesearch;
+package hr.fer.zemris.ui.uninformed;
 
-import hr.fer.zemris.search.StateCostPair;
+import hr.fer.zemris.search.structure.StateCostPair;
 
 import java.util.Map;
 import java.util.Set;
 
-public class StateSearchDataModel {
+public class UninformedSearchDataModel {
 
     private String initialState;
     private Set<String> goalStates;
@@ -33,6 +33,17 @@ public class StateSearchDataModel {
 
     public void setTransitions(Map<String, Set<StateCostPair<String>>> transitions) {
         this.transitions = transitions;
+    }
+
+    public int stateSpaceSize() {
+        return transitions.keySet().size();
+    }
+
+    public int totalTransitions() {
+        return transitions.values()
+                .stream()
+                .mapToInt(Set::size)
+                .sum();
     }
 
 }

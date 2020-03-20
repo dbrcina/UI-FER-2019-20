@@ -1,4 +1,7 @@
-package hr.fer.zemris.search;
+package hr.fer.zemris.search.uninformed;
+
+import hr.fer.zemris.search.structure.BasicNode;
+import hr.fer.zemris.search.SearchAlgorithm;
 
 import java.util.*;
 import java.util.function.Function;
@@ -11,8 +14,6 @@ public class BFS<S> extends SearchAlgorithm<S, S> {
 
     @Override
     public Optional<BasicNode<S>> search(S s0, Function<S, Set<S>> succ, Predicate<S> goal) {
-        System.out.println("Running bfs:");
-        statesVisited = 1;
         // prepare open and closed
         Deque<BasicNode<S>> open = new LinkedList<>();
         Set<S> closed = new HashSet<>();
@@ -24,7 +25,7 @@ public class BFS<S> extends SearchAlgorithm<S, S> {
             BasicNode<S> n = open.removeFirst();
             if (goal.test(n.getState())) return Optional.of(n);
             closed.add(n.getState());
-            statesVisited++;
+            setStatesVisited(closed.size());
 
             // go through all successors
             for (S successor : succ.apply(n.getState())) {

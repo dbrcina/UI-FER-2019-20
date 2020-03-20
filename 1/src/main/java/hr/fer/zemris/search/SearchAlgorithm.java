@@ -1,5 +1,7 @@
 package hr.fer.zemris.search;
 
+import hr.fer.zemris.search.structure.BasicNode;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -15,10 +17,14 @@ import java.util.function.Predicate;
  */
 public abstract class SearchAlgorithm<S, M> {
 
-    protected int statesVisited;
+    private int statesVisited;
 
     public int getStatesVisited() {
         return statesVisited;
+    }
+
+    protected void setStatesVisited(int statesVisited) {
+        this.statesVisited = statesVisited;
     }
 
     /**

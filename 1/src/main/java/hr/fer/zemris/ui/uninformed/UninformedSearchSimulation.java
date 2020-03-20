@@ -45,7 +45,7 @@ public class UninformedSearchSimulation {
         System.out.println("\033[1m   DATA LOADING:\033[0m");
         UninformedSearchDataModel model = null;
         try {
-            model = FileParser.parseStateSearchFile(file);
+            model = FileParser.parseUninformedSearchFile(file);
         } catch (IOException e) {
             exit(e.getMessage());
         }

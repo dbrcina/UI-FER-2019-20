@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class FileParser {
 
-    public static UninformedSearchDataModel parseStateSearchFile(Path file) throws IOException {
+    public static UninformedSearchDataModel parseUninformedSearchFile(Path file) throws IOException {
         List<String> lines = null;
         try {
             lines = Files.readAllLines(file).stream()

@@ -39,8 +39,6 @@ public class UninformedSearchSimulation {
         System.out.println();
         // UNIFORM COST SEARCH
         uniformCostSearch(model);
-        System.out.println();
-        // ASTAR SEARCH
     }
 
     private static UninformedSearchDataModel dataLoading(Path file) {

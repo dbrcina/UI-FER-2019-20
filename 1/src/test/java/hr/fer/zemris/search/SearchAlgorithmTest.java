@@ -19,19 +19,19 @@ public class SearchAlgorithmTest {
 
     @Test
     public void BFSTest() {
-        Map<String, Set<String>> transitions = Map.of(
-                "A", new LinkedHashSet<>(List.of("A", "B")),
-                "B", new LinkedHashSet<>(List.of("C", "D")),
-                "C", new LinkedHashSet<>(List.of("E", "F")),
-                "D", new LinkedHashSet<>(List.of("G", "H")),
-                "E", Set.of(""),
-                "F", Set.of(""),
-                "G", Set.of(""),
-                "H", Set.of("")
+        Map<String, Set<StateCostPair<String>>> transitions = Map.of(
+                "A", new LinkedHashSet<>(List.of(new StateCostPair<>("A"), new StateCostPair<>("B"))),
+                "B", new LinkedHashSet<>(List.of(new StateCostPair<>("C"), new StateCostPair<>("D"))),
+                "C", new LinkedHashSet<>(List.of(new StateCostPair<>("E"), new StateCostPair<>("F"))),
+                "D", new LinkedHashSet<>(List.of(new StateCostPair<>("G"), new StateCostPair<>("H"))),
+                "E", Set.of(),
+                "F", Set.of(),
+                "G", Set.of(),
+                "H", Set.of()
         );
-        Function<String, Set<String>> succ = transitions::get;
+        Function<String, Set<StateCostPair<String>>> succ = transitions::get;
         Predicate<String> goal = s -> s.equals("G");
-        SearchAlgorithm<String, String> searchAlg = new BFS<>();
+        SearchAlgorithm<String> searchAlg = new BFS<>();
         BasicNode<String> result = searchAlg.search("A", succ, goal).get();
         Assert.assertEquals("A =>\nB =>\nD =>\nG", BasicNode.printPathTowardsNode(result));
         Assert.assertEquals(4, result.depth() + 1);
@@ -52,7 +52,7 @@ public class SearchAlgorithmTest {
         );
         Function<String, Set<StateCostPair<String>>> succ = transitions::get;
         Predicate<String> goal = s -> s.equals("H");
-        SearchAlgorithm<String, StateCostPair<String>> searchAlg = new UCS<>();
+        SearchAlgorithm<String> searchAlg = new UCS<>();
         CostNode<String> result = (CostNode<String>) searchAlg.search("A", succ, goal).get();
         Assert.assertEquals("A =>\nC =>\nF =>\nH", BasicNode.printPathTowardsNode(result));
         Assert.assertEquals(4, result.depth() + 1);

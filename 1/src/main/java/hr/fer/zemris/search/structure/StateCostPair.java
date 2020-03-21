@@ -5,6 +5,10 @@ public class StateCostPair<S> {
     private S state;
     private double cost;
 
+    public StateCostPair(S state) {
+        this(state, 0.0);
+    }
+
     public StateCostPair(S state, double cost) {
         this.state = state;
         this.cost = cost;

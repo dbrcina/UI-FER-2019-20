@@ -1,5 +1,8 @@
 package hr.fer.zemris.search.structure;
 
+import java.util.LinkedList;
+import java.util.StringJoiner;
+
 public class BasicNode<S> {
 
     private S state;
@@ -28,13 +31,23 @@ public class BasicNode<S> {
         return state.toString();
     }
 
-    public static <T> String printPathTowardsNode(BasicNode<T> node) {
-        return pathFromFirstNodeRecursive(node);
+    public static <T> BasicNode<T>[] fromStartToGoal(BasicNode<T> goal) {
+        LinkedList<BasicNode<T>> nodes = new LinkedList<>();
+        fromGoalToStartRecursive(nodes, goal);
+        return nodes.toArray(BasicNode[]::new);
     }
 
-    private static <T> String pathFromFirstNodeRecursive(BasicNode<T> node) {
-        if (node.parent == null) return node.toString();
-        return pathFromFirstNodeRecursive(node.getParent()) + " =>\n" + node;
+    private static <T> void fromGoalToStartRecursive(LinkedList<BasicNode<T>> nodes, BasicNode<T> node) {
+        if (node == null) return;
+        nodes.push(node);
+        fromGoalToStartRecursive(nodes, node.parent);
+    }
+
+    public static <T> String printPathTowardsNode(BasicNode<T> node) {
+        BasicNode<T>[] nodes = fromStartToGoal(node);
+        StringJoiner sj = new StringJoiner(" =>\n");
+        for (BasicNode<T> n : nodes) sj.add(n.toString());
+        return sj.toString();
     }
 
 }

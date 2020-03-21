@@ -1,8 +1,8 @@
-package hr.fer.zemris.search.uninformed;
+package hr.fer.zemris.search.heuristic;
 
 import hr.fer.zemris.search.SearchAlgorithm;
 import hr.fer.zemris.search.structure.BasicNode;
-import hr.fer.zemris.search.structure.CostNode;
+import hr.fer.zemris.search.structure.HeuristicNode;
 import hr.fer.zemris.search.structure.StateCostPair;
 
 import java.util.*;
@@ -10,21 +10,27 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * Unified cost search algorithm.
+ * A* search algorithm.
  */
-public class UCS<S> extends SearchAlgorithm<S> {
+public class Astar<S> extends SearchAlgorithm<S> {
+
+    private Function<S, Double> heuristic;
+
+    public Astar(Function<S, Double> heuristic) {
+        this.heuristic = heuristic;
+    }
 
     @Override
     public Optional<BasicNode<S>> search(
             S s0, Function<S, Set<StateCostPair<S>>> succ, Predicate<S> goal) {
         // prepare open and closed collections
-        Queue<CostNode<S>> open = new PriorityQueue<>();
+        Queue<HeuristicNode<S>> open = new PriorityQueue<>(HeuristicNode.COMPARE_BY_TOTAL);
         Set<S> closed = new HashSet<>();
-        open.add(new CostNode<>(s0, null, 0.0));
+        open.add(new HeuristicNode<>(s0, null, 0.0, heuristic.apply(s0)));
 
         while (!open.isEmpty()) {
             // check head node
-            CostNode<S> n = open.remove();
+            HeuristicNode<S> n = open.remove();
             if (goal.test(n.getState())) return Optional.of(n);
             closed.add(n.getState());
             setStatesVisited(closed.size());
@@ -34,16 +40,17 @@ public class UCS<S> extends SearchAlgorithm<S> {
                 // skip closed ones
                 if (closed.contains(successor.getState())) continue;
 
-                // go through open ones and check whether current successor
-                // already exists and if it exists update it with the
-                // better cost
-                double successorCost = n.getCost() + successor.getCost();
+                // calculate new cost
+                double cost = n.getCost() + successor.getCost();
+
+                // check if current state already exist in open queue
+                // if it exists, update its cost if needed
                 boolean successorIsCheaper = true;
-                Iterator<CostNode<S>> it = open.iterator();
+                Iterator<HeuristicNode<S>> it = open.iterator();
                 while (it.hasNext()) {
-                    CostNode<S> temp = it.next();
+                    HeuristicNode<S> temp = it.next();
                     if (!temp.getState().equals(successor.getState())) continue;
-                    if (successorCost > temp.getCost()) successorIsCheaper = false;
+                    if (cost > temp.getCost()) successorIsCheaper = false;
                     else it.remove();
                     break;
                 }
@@ -51,7 +58,8 @@ public class UCS<S> extends SearchAlgorithm<S> {
                 // insert successor into open collection if path to it is cheaper
                 // than original one or if successor doesn't exist in open collection
                 if (successorIsCheaper) {
-                    open.add(new CostNode<>(successor.getState(), n, successorCost));
+                    double total = cost + heuristic.apply(successor.getState());
+                    open.add(new HeuristicNode<>(successor.getState(), n, cost, total));
                 }
             }
         }

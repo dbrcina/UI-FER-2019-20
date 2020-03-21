@@ -1,15 +1,25 @@
-package hr.fer.zemris.ui.uninformed;
+package hr.fer.zemris.ui.model;
 
 import hr.fer.zemris.search.structure.StateCostPair;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class UninformedSearchDataModel {
+/**
+ * Simple state space data model which contains everything for search problem:
+ * <ul>
+ *     <li>initial state</li>
+ *     <li>transitions between states</li>
+ *     <li>goal states</li>
+ * </ul>
+ */
+public class StateSpaceModel {
 
     private String initialState;
-    private Set<String> goalStates;
-    private Map<String, Set<StateCostPair<String>>> transitions;
+    private Set<String> goalStates = new LinkedHashSet<>();
+    private Map<String, Set<StateCostPair<String>>> transitions = new LinkedHashMap<>();
 
     public String getInitialState() {
         return initialState;
@@ -44,6 +54,10 @@ public class UninformedSearchDataModel {
                 .stream()
                 .mapToInt(Set::size)
                 .sum();
+    }
+
+    public Set<String> states() {
+        return transitions.keySet();
     }
 
 }

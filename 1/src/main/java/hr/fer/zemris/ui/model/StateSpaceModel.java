@@ -2,8 +2,6 @@ package hr.fer.zemris.ui.model;
 
 import hr.fer.zemris.search.structure.StateCostPair;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,8 +16,8 @@ import java.util.Set;
 public class StateSpaceModel {
 
     private String initialState;
-    private Set<String> goalStates = new LinkedHashSet<>();
-    private Map<String, Set<StateCostPair<String>>> transitions = new LinkedHashMap<>();
+    private Set<String> goalStates;
+    private Map<String, Set<StateCostPair<String>>> transitions;
 
     public String getInitialState() {
         return initialState;
@@ -45,8 +43,12 @@ public class StateSpaceModel {
         this.transitions = transitions;
     }
 
+    public Set<String> states() {
+        return transitions.keySet();
+    }
+
     public int stateSpaceSize() {
-        return transitions.keySet().size();
+        return states().size();
     }
 
     public int totalTransitions() {
@@ -56,8 +58,12 @@ public class StateSpaceModel {
                 .sum();
     }
 
-    public Set<String> states() {
-        return transitions.keySet();
+    public void toBidirectionalGraph() {
+        for (Map.Entry<String, Set<StateCostPair<String>>> entry : transitions.entrySet()) {
+            for (StateCostPair<String> value : entry.getValue()) {
+                transitions.get(value.getState()).add(value);
+            }
+        }
     }
 
 }

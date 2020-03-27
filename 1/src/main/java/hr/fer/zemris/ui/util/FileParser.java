@@ -7,7 +7,6 @@ import hr.fer.zemris.ui.model.StateSpaceModel;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,9 +41,9 @@ public class FileParser {
         // initial state
         model.setInitialState(lines.get(0));
         // goal states
-        model.setGoalStates(new LinkedHashSet<>(Arrays.asList(lines.get(1).split("\\s+"))));
+        model.setGoalStates(Set.of(lines.get(1).split("\\s+")));
         // find all transitions
-        Map<String, Set<StateCostPair<String>>> transitions = new LinkedHashMap<>();
+        Map<String, Set<StateCostPair<String>>> transitions = new HashMap<>();
         for (int i = 2; i < lines.size(); i++) { // skip 0(initial), 1(goal)
             String[] parts = lines.get(i).split(":");
             String state = parts[0].trim();
@@ -62,7 +61,7 @@ public class FileParser {
                         String[] succParts = successor.split(",");
                         return new StateCostPair<>(succParts[0], Double.parseDouble(succParts[1]));
                     })
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+                    .collect(Collectors.toSet());
             transitions.put(state, successors);
         }
         model.setTransitions(transitions);
@@ -84,9 +83,9 @@ public class FileParser {
         model.setHeuristicValues(lines.stream()
                 .map(line -> {
                     String[] parts = line.split(": ");
-                    return new SimpleEntry<>(parts[0], Double.parseDouble(parts[1]));
+                    return new StateCostPair<>(parts[0], Double.parseDouble(parts[1]));
                 })
-                .collect(Collectors.toUnmodifiableMap(SimpleEntry::getKey, SimpleEntry::getValue)));
+                .collect(Collectors.toMap(StateCostPair::getState, StateCostPair::getCost)));
         return model;
     }
 

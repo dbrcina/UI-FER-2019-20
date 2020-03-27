@@ -1,13 +1,9 @@
 package hr.fer.zemris.search.structure;
 
-public class StateCostPair<S> {
+public final class StateCostPair<S> implements Comparable<StateCostPair<String>> {
 
     private S state;
     private double cost;
-
-    public StateCostPair(S state) {
-        this(state, 0.0);
-    }
 
     public StateCostPair(S state, double cost) {
         this.state = state;
@@ -23,8 +19,8 @@ public class StateCostPair<S> {
     }
 
     @Override
-    public String toString() {
-        return String.format("<%s, %.2f>", state, cost);
+    public int compareTo(StateCostPair<String> other) {
+        return Double.compare(this.cost, other.cost);
     }
 
 }

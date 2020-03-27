@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static java.util.concurrent.TimeUnit.*;
+
 /**
  * Simple program that simulates searching algorithms.
  */
@@ -48,30 +50,33 @@ public class SearchSimulation {
         System.out.println();
 
         // BREADTH FIRST SEARCH
-        breadthFirstSearch(model, stateSpaceFileName);
+        //breadthFirstSearch(model, stateSpaceFileName);
         System.out.println();
 
         // UNIFORM COST SEARCH
-        uniformCostSearch(model, stateSpaceFileName);
+        //uniformCostSearch(model, stateSpaceFileName);
         System.out.println();
 
         // ASTAR SEARCH
         HeuristicModel hmodel = dataLoadingH(heuristicFile);
-        astarSearch(model, hmodel, heuristicFileName);
+        //astarSearch(model, hmodel, heuristicFileName);
         System.out.println();
 
         // HEURISTIC CHECKS
-        heuristicChecks(model, hmodel, heuristicFile.getFileName().toString());
+        heuristicChecks(model, hmodel, heuristicFileName);
     }
 
     private static StateSpaceModel dataLoading(Path file) {
         System.out.println("\033[1m   DATA LOADING \033[0m" + file.getFileName() + ":");
         StateSpaceModel model = null;
+        long start = System.currentTimeMillis();
         try {
             model = FileParser.parseStateSpaceFile(file);
         } catch (IOException e) {
             exit(e.getMessage());
         }
+        long end = System.currentTimeMillis();
+        System.out.println("Time elapsed: " + formatInterval(end - start));
         System.out.println("Start state: " + model.getInitialState());
         System.out.println("End state(s): " + model.getGoalStates());
         System.out.println("State space size: " + model.stateSpaceSize());
@@ -110,7 +115,10 @@ public class SearchSimulation {
         String s0 = model.getInitialState();
         Function<String, Set<StateCostPair<String>>> succ = model::getTransition;
         Predicate<String> goal = s -> model.getGoalStates().contains(s);
+        long start = System.currentTimeMillis();
         alg.search(s0, succ, goal).ifPresentOrElse(result -> {
+            long end = System.currentTimeMillis();
+            System.out.println("Time elapsed: " + formatInterval(end - start));
             System.out.println("States visited = " + alg.getStatesVisited());
             System.out.print("Found path of length " + (result.depth() + 1));
             System.out.println((result instanceof CostNode ?
@@ -123,14 +131,32 @@ public class SearchSimulation {
         System.out.println("\033[1m   HEURISTIC CHECKS \033[0mfor the " + file + " heuristic:");
         System.out.println("Checking heuristic:");
         System.out.println("Checking if heuristic is optimistic.");
-        System.out.println(HeuristicChecks.checkOptimistic(model, hmodel));
+        long start = System.currentTimeMillis();
+        String optimisticResults = HeuristicChecks.checkOptimisticEnhanced(model, hmodel);
+        long end = System.currentTimeMillis();
+        System.out.println(optimisticResults);
+        System.out.println("Time elapsed: " + formatInterval(end - start));
+
         System.out.println("Checking if heuristic is consistent.");
-        System.out.println(HeuristicChecks.checkConsistent(model, hmodel));
+        start = System.currentTimeMillis();
+        String consistendResults = HeuristicChecks.checkConsistent(model, hmodel);
+        end = System.currentTimeMillis();
+        System.out.println(consistendResults);
+        System.out.println("Time elapsed: " + formatInterval(end - start));
     }
 
     private static void exit(String message) {
         System.out.println(message);
         System.exit(-1);
+    }
+
+    private static String formatInterval(final long milis) {
+        final long hr = MILLISECONDS.toHours(milis);
+        final long min = MILLISECONDS.toMinutes(milis - HOURS.toMillis(hr));
+        final long sec = MILLISECONDS.toSeconds(milis - HOURS.toMillis(hr) - MINUTES.toMillis(min));
+        final long ms = MILLISECONDS.toMillis(
+                milis - HOURS.toMillis(hr) - MINUTES.toMillis(min) - SECONDS.toMillis(sec));
+        return String.format("%02d:%02d:%02d.%03d", hr, min, sec, ms);
     }
 
 }

@@ -28,7 +28,7 @@ public abstract class SearchAlgorithm<S> {
     }
 
     /**
-     * Executes state space search algorithm.
+     * Executes search algorithm.
      *
      * @param s0   initial state.
      * @param succ successors function.

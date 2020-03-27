@@ -1,6 +1,5 @@
 package hr.fer.zemris.ui.model;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -8,7 +7,7 @@ import java.util.Map;
  */
 public class HeuristicModel {
 
-    private Map<String, Double> heuristicValues = new LinkedHashMap<>();
+    private Map<String, Double> heuristicValues;
 
     public double heuristicValue(String state) {
         return heuristicValues.get(state);

@@ -10,28 +10,25 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * Unified cost search algorithm.
+ * Uniform cost search algorithm(for example Dijkstra's algorithm).
  */
 public class UCS<S> extends SearchAlgorithm<S> {
 
     @Override
     public Optional<BasicNode<S>> search(
             S s0, Function<S, Set<StateCostPair<S>>> succ, Predicate<S> goal) {
-        // prepare open and closed collections
         Queue<CostNode<S>> open = new PriorityQueue<>();
         Set<S> closed = new HashSet<>();
+
         open.add(new CostNode<>(s0, null, 0.0));
 
         while (!open.isEmpty()) {
-            // check head node
             CostNode<S> n = open.remove();
             if (goal.test(n.getState())) return Optional.of(n);
             closed.add(n.getState());
             setStatesVisited(closed.size());
 
-            // go through all successors
             for (StateCostPair<S> successor : succ.apply(n.getState())) {
-                // skip closed ones
                 if (closed.contains(successor.getState())) continue;
 
                 // go through open ones and check whether current successor

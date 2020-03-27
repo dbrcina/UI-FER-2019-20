@@ -1,0 +1,45 @@
+1. RJEŠIVOST SLAGALICE 3x3
+Pri učitavanju prostora stanja slagalice 3x3 učitano je 181440 stanja, no to nije i ukupan broj mogućih stanja. Ovo je očito kombinatorni problem pa ga možemo i matematički postaviti:
+-slagalica se sastoji od 8 različitih simbola(brojevi, boje, znakovi ili bilo što proizvoljne prirode) i 1 rupe
+-jedno stanje slagalice predstavlja jedan nasumičan raspored tih simbola pa npr. [[1, 5, 2], [4, X, 3], [7, 8, 6]] je jedno stanje slagalice gdje X predstavlja rupu, a brojevi simbole
+-matematički gledano, postoji 9!(362880) različitih konfiguracija slagalice, no samo je pola od toga rješivo pa je učitano 9!/2(181440) različitih stanja
+-sljedno rečenom, slagalicu 3x3 nije uvijek moguće riješiti ako krenemo iz proizvoljnog početnog stanja
+
+Postavlja se pitanje zašto je samo pola svih mogućih konfiguracija rješivo odnosno nerješivo. Dovoljan i nužan uvjet da konfiguracija bude rješiva je; broj permutacija inverzija slagalice mora biti paran broj. Inverzija slagalice je ništa drugo nego redoslijed simbola koji se nalaze u obrnutom poretku u usporedbi sa svim ciljnim stanjima. To najbolje možemo vidjet na sljedećem primjeru.
+
+Primjer nerješive početne konfiguracije:
+1 8 2
+X 3 4
+7 6 5
+
+Pronađimo sada sve moguće inverzije koje bi svaki simbol kojeg invertiramo približile njegovom pravom mjestu u ciljnom stanju i važno je naglasiti da se za inverziju uvijek uzimaju sljedeći simboli koji su manje vrijednosti:
+-1 ostaje gdje je jer ne postoji niti jedan simbol manje vrijednosti nakon njega
+-8 možemo zamijeniti: (8,2), (8,3), (8,4), (8,7), (8,6), (8,5)
+-2 ostaje gdje je zbog istog razloga kao i za 1
+-3 ostaje gdje je
+-4 ostaje gdje je
+-7 možemo zamijeniti: (7,6), (7,5)
+-6 možemo zamijeniti: (6,5)
+-5 ostaje gdje je
+Kada sumiramo sve ove permutacije stanje, dobijemo 6+2+1=9 što je neparan broj, stoga ovaj primjer neće dovesti do ciljnog rješenja. Primjer možemo učiniti rješivim tako da dotjeramo broj permutacija na paran broj pa tako možemo zamijeniti npr. simbole 3 i 4 te bi na taj način dobili konfiguraciju za koju je suma permutacija svih stanje nastalih inverzijom parna. Također, ovu provjeru sam i potvrdio tako što sam u dobivenoj 3x3_puzzle.txt datoteci pokušao pronaći baš ovo stanje koje sam dao za primjer nerješive konfiguracije, no nisam ga pronašao, ali zamjenom 3 i 4 sam pronašao validnu konfiguraciju.
+
+Slično će vrijediti i za slagalicu 4x4 no uz neke dodatke. Slagalica 4x4 će biti rješiva ako:
+-se rupa(X) nalazi u parnom retku gledano odozdo i ako je suma inverzija neparna
+-se rupa(X) nalazi u neparnom retku gledano odozdo i ako je suma inverzija parna.
+
+Primjer nerješive početne konfiguracije:
+ 3  9  1 15
+14 11  4  6
+13  X 10 12
+ 2  7  8  5
+
+Pozicija rupe(X) = 2 red odozdo
+Suma inverzija = 56 (računa se na isti način...(3, 1), (3, 2), (9, 1), (9, 4) itd..)
+Vidimo kombinaciju parno-parno, stoga iz ove konfiguracije nije moguće pronaći validno rješenje. No opet možemo dotjerati sumu inverzija tako da npr. zamijenimo 11 i 4 pa ćemo dobiti sumu inverzija 55 što je neparno, stoga je validna konfiguracija iz koje se može pronaći rješenje.
+
+OPĆENITO: Slagalica širine N rješiva je akko:
+	(1) ako je N neparan i ako je suma inverzija parna
+	(2) ako je N paran:	-ako se rupa nalazi u parnom retku odozdo i suma inverzija je neparna
+						-ako se rupa nalazi u neparnom retku odozdo i suma inverzija je parna
+
+Iz ovoga svega se da zaključiti zašto se za broj rješivih konfiguracija uzima (N*N)!/2 no nisam siguran kako to matematički dokazati.

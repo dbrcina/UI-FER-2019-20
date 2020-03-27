@@ -1,7 +1,7 @@
 package hr.fer.zemris.search.uninformed;
 
-import hr.fer.zemris.search.structure.BasicNode;
 import hr.fer.zemris.search.SearchAlgorithm;
+import hr.fer.zemris.search.structure.BasicNode;
 import hr.fer.zemris.search.structure.StateCostPair;
 
 import java.util.*;
@@ -10,31 +10,36 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Breadth first search algorithm.
+ * Breadth first search algorithm.<br> This implementation is enchanced one:
+ * <ul>
+ *     <li>has collection that keeps track about closed nodes to avoid cycles,</li>
+ *     <li>tests the child nodes before putting them in collection of open nodes to lower the time/space
+ *     complexity from 2^(d+1) to 2^d, where d is distance(depth) of optimal result.
+ *     </li>
+ * </ul>
  */
 public class BFS<S> extends SearchAlgorithm<S> {
 
     @Override
     public Optional<BasicNode<S>> search(
             S s0, Function<S, Set<StateCostPair<S>>> succ, Predicate<S> goal) {
-        // prepare open and closed collections
         Deque<BasicNode<S>> open = new LinkedList<>();
         Set<S> closed = new HashSet<>();
-        open.add(new BasicNode<>(s0, null));
+
+        BasicNode<S> head = new BasicNode<>(s0, null);
+        if (goal.test(head.getState())) return Optional.of(head);
+
+        open.add(head);
 
         while (!open.isEmpty()) {
-            // check head node
             BasicNode<S> n = open.removeFirst();
-            if (goal.test(n.getState())) return Optional.of(n);
             closed.add(n.getState());
             setStatesVisited(closed.size());
 
-            // go through all successors
             Set<S> successors = succ.apply(n.getState()).stream()
                     .map(StateCostPair::getState)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+                    .collect(Collectors.toSet());
             for (S successor : successors) {
-                // skip closed ones
                 if (closed.contains(successor)) continue;
                 BasicNode<S> m = new BasicNode<>(successor, n);
                 if (goal.test(successor)) return Optional.of(m);

@@ -25,39 +25,32 @@ public class Astar<S> extends SearchAlgorithm<S> {
     public Optional<BasicNode<S>> search(
             S s0, Function<S, Set<StateCostPair<S>>> succ, Predicate<S> goal) {
         Queue<HeuristicNode<S>> open = new PriorityQueue<>(HeuristicNode.COMPARE_BY_TOTAL);
+        Map<S, HeuristicNode<S>> openMap = new HashMap<>();
         Set<S> closed = new HashSet<>();
 
-        open.add(new HeuristicNode<>(s0, null, 0.0, heuristic.applyAsDouble(s0)));
+        HeuristicNode<S> n0 = new HeuristicNode<>(s0, null, 0.0, heuristic.applyAsDouble(s0));
+        open.add(n0);
+        openMap.put(s0, n0);
 
         while (!open.isEmpty()) {
             HeuristicNode<S> n = open.remove();
+            n = openMap.remove(n.getState());
             if (goal.test(n.getState())) return Optional.of(n);
             closed.add(n.getState());
             setStatesVisited(closed.size());
 
             for (StateCostPair<S> successor : succ.apply(n.getState())) {
-                if (closed.contains(successor.getState())) continue;
-
-                // successor's cost values
+                S state = successor.getState();
+                if (closed.contains(state)) continue;
                 double cost = n.getCost() + successor.getCost();
-                double total = cost + heuristic.applyAsDouble(successor.getState());
-
-                // check if successor already exist in open queue
-                // if it exists, update its total cost if needed
-                boolean successorIsCheaper = true;
-                Iterator<HeuristicNode<S>> it = open.iterator();
-                while (it.hasNext()) {
-                    HeuristicNode<S> temp = it.next();
-                    if (!temp.getState().equals(successor.getState())) continue;
-                    if (total > temp.getTotalEstimatedCost()) successorIsCheaper = false;
-                    else it.remove();
-                    break;
-                }
-
-                // insert successor into open collection if path to it is cheaper
-                // than original one or if successor doesn't exist in open collection
-                if (successorIsCheaper) {
-                    open.add(new HeuristicNode<>(successor.getState(), n, cost, total));
+                double total = cost + heuristic.applyAsDouble(state);
+                HeuristicNode<S> m = new HeuristicNode<>(state, n, cost, total);
+                if (openMap.containsKey(state)) {
+                    openMap.compute(state, (k, v) ->
+                            v.getTotalEstimatedCost() < m.getTotalEstimatedCost() ? v : m);
+                } else {
+                    open.add(m);
+                    openMap.put(state, m);
                 }
             }
         }

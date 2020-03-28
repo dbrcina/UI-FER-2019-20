@@ -7,24 +7,25 @@ import hr.fer.zemris.search.uninformed.UCS;
 import hr.fer.zemris.ui.model.HeuristicModel;
 import hr.fer.zemris.ui.model.StateSpaceModel;
 
-import java.util.HashSet;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * Utility class used to validate heuristic.
+ * Provides some utility methods for heuristics manipulation.
  */
-public class HeuristicChecks {
+public class HeuristicUtil {
+
+    private static final int MAX_ERROR_COUNT = 50;
 
     /**
-     * Checks whether heuristic is optimistic. Feedback is given through string text.
+     * Checks whether heuristic is optimistic. Feedback is given through string text. <br> This
+     * implementation is naive and it won't work on larger search problems like 3x3 puzzle.
      *
      * @param model  state space model.
      * @param hmodel heuristic model.
      * @return string representation of this check.
+     * @see #checkOptimisticEnhanced(StateSpaceModel, HeuristicModel)
      */
     public static String checkOptimistic(StateSpaceModel model, HeuristicModel hmodel) {
         StringBuilder sb = new StringBuilder();
@@ -44,7 +45,7 @@ public class HeuristicChecks {
                 sb.append(heuristicValue).append(" > ").append(cost).append("\n");
             }
         }
-        if (counter >= 50) {
+        if (counter >= MAX_ERROR_COUNT) {
             sb.setLength(0);
             sb.append("\t[ERR] ").append(counter).append(" errors, ommiting output.").append("\n");
         }
@@ -53,7 +54,8 @@ public class HeuristicChecks {
     }
 
     /**
-     * Checks whether heuristic is optimistic. Feedback is given through string text.
+     * Checks whether heuristic is optimistic. Feedback is given through string text. <br> This
+     * implementation is more reliable and faster and it will work with most search problems.
      *
      * @param model  state space model.
      * @param hmodel heuristic model.
@@ -61,24 +63,28 @@ public class HeuristicChecks {
      */
     public static String checkOptimisticEnhanced(StateSpaceModel model, HeuristicModel hmodel) {
         StringBuilder sb = new StringBuilder();
-        model.toBidirectionalGraph();
+        model = model.reverseGraph();
         boolean optimistic = true;
         int counter = 0;
         for (String goalState : model.getGoalStates()) {
             Queue<StateCostPair<String>> open = new PriorityQueue<>();
-            open.add(new StateCostPair<>(goalState, 0.0));
             Set<String> states = new HashSet<>(model.states());
-            Set<StateCostPair<String>> results = new HashSet<>();
+            Map<String, Double> costs = new HashMap<>();
+            open.add(new StateCostPair<>(goalState, 0.0));
+            states.remove(goalState);
             while (!open.isEmpty()) {
                 StateCostPair<String> n = open.remove();
                 for (StateCostPair<String> succ : model.getTransition(n.getState())) {
                     if (!states.remove(succ.getState())) continue;
-                    open.add(new StateCostPair<>(succ.getState(), n.getCost() + succ.getCost()));
+                    double cost = n.getCost() + succ.getCost();
+                    double value = costs.merge(succ.getState(), cost, Math::min);
+                    if (Math.abs(cost - value) <= 1e-6)
+                        open.add(new StateCostPair<>(succ.getState(), cost));
                 }
             }
-            for (StateCostPair<String> pair : open) {
-                String state = pair.getState();
-                double cost = pair.getCost();
+            for (Map.Entry<String, Double> entry : costs.entrySet()) {
+                String state = entry.getKey();
+                double cost = entry.getValue();
                 double heuristicValue = hmodel.heuristicValue(state);
                 if (cost < heuristicValue) {
                     counter++;
@@ -88,7 +94,7 @@ public class HeuristicChecks {
                 }
             }
         }
-        if (counter >= 50) {
+        if (counter >= MAX_ERROR_COUNT) {
             sb.setLength(0);
             sb.append("\t[ERR] ").append(counter).append(" errors, ommiting output.").append("\n");
         }
@@ -121,7 +127,7 @@ public class HeuristicChecks {
                 }
             }
         }
-        if (counter >= 50) {
+        if (counter >= MAX_ERROR_COUNT) {
             sb.setLength(0);
             sb.append("\t[ERR] ").append(counter).append(" errors, ommiting output.").append("\n");
         }

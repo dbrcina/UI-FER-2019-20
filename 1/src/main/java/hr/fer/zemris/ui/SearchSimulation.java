@@ -10,7 +10,7 @@ import hr.fer.zemris.search.uninformed.UCS;
 import hr.fer.zemris.ui.model.HeuristicModel;
 import hr.fer.zemris.ui.model.StateSpaceModel;
 import hr.fer.zemris.ui.util.FileParser;
-import hr.fer.zemris.ui.util.HeuristicChecks;
+import hr.fer.zemris.ui.util.HeuristicUtil;
 import hr.fer.zemris.ui.util.PathValidator;
 
 import java.io.IOException;
@@ -50,16 +50,16 @@ public class SearchSimulation {
         System.out.println();
 
         // BREADTH FIRST SEARCH
-        //breadthFirstSearch(model, stateSpaceFileName);
+        breadthFirstSearch(model, stateSpaceFileName);
         System.out.println();
 
         // UNIFORM COST SEARCH
-        //uniformCostSearch(model, stateSpaceFileName);
+        uniformCostSearch(model, stateSpaceFileName);
         System.out.println();
 
         // ASTAR SEARCH
         HeuristicModel hmodel = dataLoadingH(heuristicFile);
-        //astarSearch(model, hmodel, heuristicFileName);
+        astarSearch(model, hmodel, heuristicFileName);
         System.out.println();
 
         // HEURISTIC CHECKS
@@ -132,14 +132,14 @@ public class SearchSimulation {
         System.out.println("Checking heuristic:");
         System.out.println("Checking if heuristic is optimistic.");
         long start = System.currentTimeMillis();
-        String optimisticResults = HeuristicChecks.checkOptimisticEnhanced(model, hmodel);
+        String optimisticResults = HeuristicUtil.checkOptimisticEnhanced(model, hmodel);
         long end = System.currentTimeMillis();
         System.out.println(optimisticResults);
         System.out.println("Time elapsed: " + formatInterval(end - start));
 
         System.out.println("Checking if heuristic is consistent.");
         start = System.currentTimeMillis();
-        String consistendResults = HeuristicChecks.checkConsistent(model, hmodel);
+        String consistendResults = HeuristicUtil.checkConsistent(model, hmodel);
         end = System.currentTimeMillis();
         System.out.println(consistendResults);
         System.out.println("Time elapsed: " + formatInterval(end - start));

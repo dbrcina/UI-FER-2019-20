@@ -2,8 +2,7 @@ package hr.fer.zemris.ui.model;
 
 import hr.fer.zemris.search.structure.StateCostPair;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Simple state space data model which contains everything for search problem:
@@ -58,12 +57,19 @@ public class StateSpaceModel {
                 .sum();
     }
 
-    public void toBidirectionalGraph() {
+    public StateSpaceModel reverseGraph() {
+        Map<String, Set<StateCostPair<String>>> reversed = new HashMap<>();
+        transitions.keySet().forEach(k -> reversed.putIfAbsent(k, new HashSet<>()));
         for (Map.Entry<String, Set<StateCostPair<String>>> entry : transitions.entrySet()) {
-            for (StateCostPair<String> value : entry.getValue()) {
-                transitions.get(value.getState()).add(value);
+            for (StateCostPair<String> pair : entry.getValue()) {
+                reversed.get(pair.getState()).add(new StateCostPair<>(entry.getKey(), pair.getCost()));
             }
         }
+        StateSpaceModel model = new StateSpaceModel();
+        model.initialState = initialState;
+        model.goalStates = new HashSet<>(goalStates);
+        model.transitions = reversed;
+        return model;
     }
 
 }

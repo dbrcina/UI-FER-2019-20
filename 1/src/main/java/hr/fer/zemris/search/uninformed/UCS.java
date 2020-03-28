@@ -18,37 +18,30 @@ public class UCS<S> extends SearchAlgorithm<S> {
     public Optional<BasicNode<S>> search(
             S s0, Function<S, Set<StateCostPair<S>>> succ, Predicate<S> goal) {
         Queue<CostNode<S>> open = new PriorityQueue<>();
+        Map<S, CostNode<S>> openMap = new HashMap<>();
         Set<S> closed = new HashSet<>();
 
-        open.add(new CostNode<>(s0, null, 0.0));
+        CostNode<S> n0 = new CostNode<>(s0, null, 0.0);
+        open.add(n0);
+        openMap.put(s0, n0);
 
         while (!open.isEmpty()) {
             CostNode<S> n = open.remove();
+            n = openMap.remove(n.getState());
             if (goal.test(n.getState())) return Optional.of(n);
             closed.add(n.getState());
             setStatesVisited(closed.size());
 
             for (StateCostPair<S> successor : succ.apply(n.getState())) {
-                if (closed.contains(successor.getState())) continue;
-
-                // go through open ones and check whether current successor
-                // already exists and if it exists update it with the
-                // better cost
-                double successorCost = n.getCost() + successor.getCost();
-                boolean successorIsCheaper = true;
-                Iterator<CostNode<S>> it = open.iterator();
-                while (it.hasNext()) {
-                    CostNode<S> temp = it.next();
-                    if (!temp.getState().equals(successor.getState())) continue;
-                    if (successorCost > temp.getCost()) successorIsCheaper = false;
-                    else it.remove();
-                    break;
-                }
-
-                // insert successor into open collection if path to it is cheaper
-                // than original one or if successor doesn't exist in open collection
-                if (successorIsCheaper) {
-                    open.add(new CostNode<>(successor.getState(), n, successorCost));
+                S state = successor.getState();
+                if (closed.contains(state)) continue;
+                double cost = n.getCost() + successor.getCost();
+                CostNode<S> m = new CostNode<>(state, n, cost);
+                if (openMap.containsKey(state)) {
+                    openMap.compute(state, (k, v) -> v.compareTo(m) < 0 ? v : m);
+                } else {
+                    open.add(m);
+                    openMap.put(state, m);
                 }
             }
         }

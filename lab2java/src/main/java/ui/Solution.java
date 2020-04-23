@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 public class Solution {
 
-
     public static void main(String[] args) throws IOException {
         if (args.length < 2 || args.length > 4) {
             return;
@@ -50,9 +49,8 @@ public class Solution {
             sb.append(negatedGoalClause.getIndex()).append(". ").append(negatedGoalClause).append("\n");
             sb.append("===========").append("\n");
         }
-        Collection<CNFClause> sOs = new LinkedList<>() {{
-            add(negatedGoalClause);
-        }};
+        Collection<CNFClause> sOs = new LinkedList<>();
+        sOs.add(negatedGoalClause);
         int index = negatedGoalClause.getIndex() + 1;
         while (!allClauses.isEmpty()) {
             Collection<CNFClause> newKnowledge = new LinkedList<>();
@@ -142,9 +140,8 @@ public class Solution {
         } else {
             for (Literal l : literalsToDelete) {
                 literals1.remove(l);
-                literals2.remove(l.negate());
-                literals1.addAll(literals2);
-                resolvents.add(new CNFClause(literals1, index++));
+                literals1.addAll(literals2.stream().filter(li -> !li.equals(l.nNegate())).collect(Collectors.toList()));
+                if (!literals1.isEmpty()) resolvents.add(new CNFClause(literals1, index++));
             }
         }
         return resolvents;

@@ -1,6 +1,7 @@
 package ui.model;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -53,19 +54,24 @@ public class CNFClause {
         return false;
     }
 
-    public boolean addLiteral(Literal l) {
-        return literals.add(l);
-    }
-
-    public boolean removeLiteral(Literal l) {
-        return literals.remove(l);
-    }
-
     @Override
     public String toString() {
         StringJoiner sj = new StringJoiner(" v ");
         literals.forEach(l -> sj.add(l.toString()));
         return sj.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CNFClause)) return false;
+        CNFClause clause = (CNFClause) o;
+        return literals.equals(clause.literals);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(literals);
     }
 
 }

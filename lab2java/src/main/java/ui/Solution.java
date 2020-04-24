@@ -1,5 +1,9 @@
 package ui;
 
+import ui.command.AddCommand;
+import ui.command.Command;
+import ui.command.QueryCommand;
+import ui.command.RemoveCommand;
 import ui.model.CNFClause;
 import ui.model.Literal;
 import ui.model.PLModel;
@@ -8,8 +12,10 @@ import ui.util.FileParser;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class Solution {
@@ -19,7 +25,6 @@ public class Solution {
             return;
         }
         String task = args[0].toLowerCase();
-        if (!task.equals("resolution")) return;
         Path clausesFile = Paths.get(args[1]);
         Path commandsFile = null;
         boolean verbose = false;
@@ -32,107 +37,65 @@ public class Solution {
         }
         PLModel model = FileParser.parseClausesFile(clausesFile);
 
+        switch (task) {
+            case "resolution":
+                resolution(model, verbose);
+                break;
+            case "cooking_test":
+                cookingTest(model, commandsFile, verbose);
+                break;
+            case "cooking_interactive":
+                cookingInteractive(model, verbose);
+                break;
+        }
+    }
+
+    private static void resolution(PLModel model, boolean verbose) {
         StringBuilder sb = new StringBuilder();
-        boolean result = plResolution(model, sb, verbose);
+        boolean result = ResolutionUtils.plResolution(model, sb, verbose);
         if (!result) sb.setLength(0);
         sb.append(model.getGoalClause()).append(" is ").append(result ? "true" : "unknown");
         System.out.println(sb.toString());
     }
 
-    private static boolean plResolution(PLModel model, StringBuilder sb, boolean verbose) {
-        Collection<CNFClause> allClauses = model.getClauses().stream()
-                .map(CNFClause::copy)
-                .collect(Collectors.toList());
-        CNFClause negatedGoalClause = model.getGoalClause().nNegate();
-        if (verbose) {
-            allClauses.forEach(c -> sb.append(c.getIndex()).append(". ").append(c).append("\n"));
-            sb.append("===========").append("\n");
-            sb.append(negatedGoalClause.getIndex()).append(". ").append(negatedGoalClause).append("\n");
-            sb.append("===========").append("\n");
-        }
-        Collection<CNFClause> sOs = new LinkedList<>();
-        sOs.add(negatedGoalClause);
-        int index = negatedGoalClause.getIndex() + 1;
-        while (true) {
-            Collection<Entry<CNFClause, CNFClause>> clausePairs = selectClauses(allClauses, sOs);
-            if (clausePairs.isEmpty()) {
-                if (verbose) sb.append("===========").append("\n");
-                return false;
-            }
-            for (Entry<CNFClause, CNFClause> clausePair : clausePairs) {
-                CNFClause c1 = clausePair.getKey();
-                CNFClause c2 = clausePair.getValue();
-                Collection<CNFClause> resolvents = plResolve(c1, c2, index);
-                resolvents.removeIf(CNFClause::isTautology);
-                for (CNFClause resolvent : resolvents) {
-                    allClauses.removeIf(c -> c.isSubsumedBy(resolvent));
-                    sOs.removeIf(c -> c.isSubsumedBy(resolvent));
-                }
-                index += resolvents.size();
-                if (verbose) {
-                    boolean isFinal = false;
-                    if (resolvents.isEmpty()) {
-                        isFinal = true;
-                        resolvents.add(new CNFClause(Arrays.asList(new Literal("NIL")), index));
-                    }
-                    resolvents.forEach(r -> sb.append(r.getIndex()).append(". ").append(r)
-                            .append(" (").append(c1.getIndex()).append(", ")
-                            .append(c2.getIndex()).append(")\n"));
-                    if (isFinal) {
-                        sb.append("===========").append("\n");
-                        resolvents.clear();
-                    }
-                }
-                if (resolvents.isEmpty()) {
-                    return true;
-                }
-                sOs.addAll(resolvents);
-                allClauses.addAll(resolvents);
-            }
-        }
+    private static void cookingTest(
+            PLModel model, Path commandsFile, boolean verbose) throws IOException {
+        Collection<Entry<CNFClause, Command>> cnfCommands = FileParser.parseCommandsFile(
+                commandsFile, model, verbose);
+        cnfCommands.forEach(pair -> {
+            CNFClause clause = pair.getKey();
+            Command command = pair.getValue();
+            command.actionPerformed(clause);
+        });
     }
 
-    private static Collection<Entry<CNFClause, CNFClause>> selectClauses(
-            Collection<CNFClause> clauses, Collection<CNFClause> sOs) {
-        Collection<Entry<CNFClause, CNFClause>> clausePairs = new LinkedList<>();
-        for (CNFClause clause : clauses) {
-            for (CNFClause sOsClause : sOs) {
-                for (Literal l : sOsClause.getLiterals()) {
-                    if (clause.containsLiteral(l.nNegate())) {
-                        clausePairs.add(new AbstractMap.SimpleEntry<>(clause, sOsClause));
-                    }
-                }
+    private static void cookingInteractive(PLModel model, boolean verbose) throws IOException {
+        CNFClause c = model.getGoalClause();
+        model.addClause(model.getGoalClause());
+        int index = c.getIndex() + 1;
+        System.out.println("Testing cooking assistant with standard resolution");
+        System.out.println("Constructed with knowledge:");
+        model.getClauses().forEach(cl -> System.out.println("> " + cl));
+        try (Scanner sc = new Scanner(System.in)) {
+            while (true) {
+                System.out.println("\n>>> Please enter your query");
+                System.out.print(">>> ");
+                String line = sc.nextLine().trim().toLowerCase();
+                if (line.isEmpty()) continue;
+                if (line.equals("exit")) break;
+                int lastIndexOfSpace = line.lastIndexOf(' ');
+                String comm = line.substring(lastIndexOfSpace + 1);
+                CNFClause clause = new CNFClause(
+                        Arrays.stream(line.substring(0, lastIndexOfSpace).split(" v "))
+                                .map(Literal::new)
+                                .collect(Collectors.toList()), index++);
+                Command command = null;
+                if (comm.equals("+")) command = new AddCommand(model);
+                if (comm.equals("-")) command = new RemoveCommand(model);
+                if (comm.equals("?")) command = new QueryCommand(model, verbose);
+                command.actionPerformed(clause);
             }
         }
-        return clausePairs;
-    }
-
-    private static Collection<CNFClause> plResolve(CNFClause c1, CNFClause c2, int index) {
-        Collection<CNFClause> resolvents = new LinkedList<>();
-        Collection<Literal> literals = new LinkedList<>();
-        Collection<Literal> literals1 = c1.getLiterals();
-        Collection<Literal> literals2 = c2.getLiterals();
-        Collection<Literal> literalsToDelete = new HashSet<>();
-        for (Literal l1 : literals1) {
-            for (Literal l2 : literals2) {
-                if (l1.equals(l2.nNegate())) {
-                    literalsToDelete.add(l1);
-                }
-            }
-        }
-        for (Literal l : literalsToDelete) {
-            literals.addAll(literals1.stream()
-                    .filter(li -> !li.equals(l))
-                    .collect(Collectors.toSet()));
-            literals.addAll(literals2.stream()
-                    .filter(li -> !li.equals(l.nNegate()))
-                    .collect(Collectors.toSet()));
-            if (!literals.isEmpty()) {
-                resolvents.add(new CNFClause(literals, index++));
-                literals.clear();
-            }
-        }
-        return resolvents;
     }
 
 }

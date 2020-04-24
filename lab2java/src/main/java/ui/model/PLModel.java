@@ -8,7 +8,7 @@ import java.util.Collection;
 public class PLModel {
 
     private final Collection<CNFClause> clauses;
-    private final CNFClause goalClause;
+    private CNFClause goalClause;
 
     public PLModel(Collection<CNFClause> clauses, CNFClause goalClause) {
         this.clauses = clauses;
@@ -21,6 +21,18 @@ public class PLModel {
 
     public CNFClause getGoalClause() {
         return goalClause;
+    }
+
+    public void setGoalClause(CNFClause goalClause) {
+        this.goalClause = goalClause;
+    }
+
+    public void addClause(CNFClause clause) {
+        clauses.add(clause);
+    }
+
+    public void removeClause(CNFClause clause) {
+        clauses.remove(clause);
     }
 
 }

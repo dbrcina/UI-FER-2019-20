@@ -34,6 +34,7 @@ public class Solution {
 
         StringBuilder sb = new StringBuilder();
         boolean result = plResolution(model, sb, verbose);
+        if (!result) sb.setLength(0);
         sb.append(model.getGoalClause()).append(" is ").append(result ? "true" : "unknown");
         System.out.println(sb.toString());
     }
@@ -52,12 +53,21 @@ public class Solution {
         Collection<CNFClause> sOs = new LinkedList<>();
         sOs.add(negatedGoalClause);
         int index = negatedGoalClause.getIndex() + 1;
-        while (!allClauses.isEmpty()) {
-            Collection<CNFClause> newKnowledge = new LinkedList<>();
-            for (Entry<CNFClause, CNFClause> clausePair : selectClauses(allClauses, sOs)) {
+        while (true) {
+            Collection<Entry<CNFClause, CNFClause>> clausePairs = selectClauses(allClauses, sOs);
+            if (clausePairs.isEmpty()) {
+                if (verbose) sb.append("===========").append("\n");
+                return false;
+            }
+            for (Entry<CNFClause, CNFClause> clausePair : clausePairs) {
                 CNFClause c1 = clausePair.getKey();
                 CNFClause c2 = clausePair.getValue();
                 Collection<CNFClause> resolvents = plResolve(c1, c2, index);
+                resolvents.removeIf(CNFClause::isTautology);
+                for (CNFClause resolvent : resolvents) {
+                    allClauses.removeIf(c -> c.isSubsumedBy(resolvent));
+                    sOs.removeIf(c -> c.isSubsumedBy(resolvent));
+                }
                 index += resolvents.size();
                 if (verbose) {
                     boolean isFinal = false;
@@ -76,47 +86,22 @@ public class Solution {
                 if (resolvents.isEmpty()) {
                     return true;
                 }
-                newKnowledge.addAll(resolvents);
+                sOs.addAll(resolvents);
+                allClauses.addAll(resolvents);
             }
-            sOs.addAll(newKnowledge);
         }
-        if (verbose) sb.append("===========").append("\n");
-        return false;
     }
 
     private static Collection<Entry<CNFClause, CNFClause>> selectClauses(
             Collection<CNFClause> clauses, Collection<CNFClause> sOs) {
         Collection<Entry<CNFClause, CNFClause>> clausePairs = new LinkedList<>();
-        Iterator<CNFClause> itClauses = clauses.iterator();
-        while (itClauses.hasNext()) {
-            CNFClause clause = itClauses.next();
-            if (clause.isTautology()) { // remove if tautology
-                itClauses.remove();
-                continue;
-            }
-            boolean found = false;
-            Iterator<CNFClause> itSoS = sOs.iterator();
-            while (itSoS.hasNext()) {
-                CNFClause sOsClause = itSoS.next();
-                if (clause.isSubsumed(sOsClause)) { // remove if subsumed
-                    itClauses.remove();
-                    break;
-                }
-                if (sOsClause.isSubsumed(clause)) { // remove if subsumed
-                    itClauses.remove();
-                    itSoS.remove();
-                    break;
-                }
+        for (CNFClause clause : clauses) {
+            for (CNFClause sOsClause : sOs) {
                 for (Literal l : sOsClause.getLiterals()) {
                     if (clause.containsLiteral(l.nNegate())) {
                         clausePairs.add(new AbstractMap.SimpleEntry<>(clause, sOsClause));
-                        found = true;
-                        itClauses.remove();
-                        itSoS.remove();
-                        break;
                     }
                 }
-                if (found) break;
             }
         }
         return clausePairs;
@@ -124,6 +109,7 @@ public class Solution {
 
     private static Collection<CNFClause> plResolve(CNFClause c1, CNFClause c2, int index) {
         Collection<CNFClause> resolvents = new LinkedList<>();
+        Collection<Literal> literals = new LinkedList<>();
         Collection<Literal> literals1 = c1.getLiterals();
         Collection<Literal> literals2 = c2.getLiterals();
         Collection<Literal> literalsToDelete = new HashSet<>();
@@ -134,14 +120,16 @@ public class Solution {
                 }
             }
         }
-        if (literalsToDelete.isEmpty()) {
-            literals1.addAll(literals2);
-            resolvents.add(new CNFClause(literals1, index));
-        } else {
-            for (Literal l : literalsToDelete) {
-                literals1.remove(l);
-                literals1.addAll(literals2.stream().filter(li -> !li.equals(l.nNegate())).collect(Collectors.toList()));
-                if (!literals1.isEmpty()) resolvents.add(new CNFClause(literals1, index++));
+        for (Literal l : literalsToDelete) {
+            literals.addAll(literals1.stream()
+                    .filter(li -> !li.equals(l))
+                    .collect(Collectors.toSet()));
+            literals.addAll(literals2.stream()
+                    .filter(li -> !li.equals(l.nNegate()))
+                    .collect(Collectors.toSet()));
+            if (!literals.isEmpty()) {
+                resolvents.add(new CNFClause(literals, index++));
+                literals.clear();
             }
         }
         return resolvents;

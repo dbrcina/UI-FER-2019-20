@@ -35,8 +35,8 @@ public class CNFClause {
         return new CNFClause(literals, index);
     }
 
-    public boolean isSubsumed(CNFClause other) {
-        return other.literals.containsAll(literals);
+    public boolean isSubsumedBy(CNFClause other) {
+        return literals.containsAll(other.literals);
     }
 
     public boolean isTautology() {
@@ -47,7 +47,10 @@ public class CNFClause {
     }
 
     public boolean containsLiteral(Literal l) {
-        return literals.contains(l);
+        for (Literal literal : literals) {
+            if (literal.equals(l)) return true;
+        }
+        return false;
     }
 
     public boolean addLiteral(Literal l) {

@@ -17,11 +17,13 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 /**
- * Utility class which provides simple parsing method.
+ * Utility class which provides simple parsing methods.
  */
 public class FileParser {
 
-    public static PLModel parseClausesFile(Path file) throws IOException {
+    private static final String SPLIT_PATTER = "\\s+v\\s+";
+
+    public static PLModel parseClausesFile(Path file, boolean testing) throws IOException {
         try (BufferedReader br = Files.newBufferedReader(file)) {
             List<CNFClause> clauses = new LinkedList<>();
             String line;
@@ -29,20 +31,19 @@ public class FileParser {
             while ((line = br.readLine()) != null) {
                 line = line.trim().toLowerCase();
                 if (line.isEmpty() || line.startsWith("#")) continue;
-                Collection<Literal> literals = Arrays.stream(line.split("\\sv\\s"))
+                Collection<Literal> literals = Arrays.stream(line.split(SPLIT_PATTER))
                         .map(Literal::new)
                         .collect(Collectors.toList());
                 clauses.add(new CNFClause(literals, index++));
             }
-            return new PLModel(clauses, clauses.remove(clauses.size() - 1));
+            return new PLModel(clauses,
+                    testing ? clauses.get(clauses.size() - 1) : clauses.remove(clauses.size() - 1));
         }
     }
 
     public static Collection<Entry<CNFClause, Command>> parseCommandsFile(
             Path file, PLModel model, boolean verbose) throws IOException {
-        CNFClause c = model.getGoalClause();
-        model.addClause(c);
-        int index = c.getIndex() + 1;
+        int index = model.getGoalClause().getIndex() + 1;
         try (BufferedReader br = Files.newBufferedReader(file)) {
             Collection<Entry<CNFClause, Command>> cnfCommands = new LinkedList<>();
             String line;
@@ -53,16 +54,16 @@ public class FileParser {
                 Command command = null;
                 switch (line.substring(lastIndexOfSpace + 1)) {
                     case "+":
-                        command = new AddCommand(model);
+                        command = new AddCommand(model, true);
                         break;
                     case "-":
-                        command = new RemoveCommand(model);
+                        command = new RemoveCommand(model, true);
                         break;
                     case "?":
-                        command = new QueryCommand(model, verbose);
+                        command = new QueryCommand(model, true, verbose);
                 }
                 Collection<Literal> literals = Arrays.stream(
-                        line.substring(0, lastIndexOfSpace).split("\\sv\\s"))
+                        line.substring(0, lastIndexOfSpace).split(SPLIT_PATTER))
                         .map(Literal::new)
                         .collect(Collectors.toList());
                 cnfCommands.add(new AbstractMap.SimpleEntry<>(

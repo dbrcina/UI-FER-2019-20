@@ -1,0 +1,1 @@
+prolaz_predmeta is true

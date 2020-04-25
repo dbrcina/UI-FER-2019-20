@@ -1,0 +1,8 @@
+A v B
+~B v C
+C v ~C
+C v ~C
+C v ~C
+B v ~B
+
+~A 

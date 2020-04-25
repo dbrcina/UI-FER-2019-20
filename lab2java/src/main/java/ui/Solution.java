@@ -35,7 +35,7 @@ public class Solution {
             if (args[2].equals("verbose")) verbose = true;
             else commandsFile = Paths.get(args[2]);
         }
-        PLModel model = FileParser.parseClausesFile(clausesFile);
+        PLModel model = FileParser.parseClausesFile(clausesFile, task.equals("cooking_test"));
 
         switch (task) {
             case "resolution":
@@ -52,8 +52,8 @@ public class Solution {
 
     private static void resolution(PLModel model, boolean verbose) {
         StringBuilder sb = new StringBuilder();
-        boolean result = ResolutionUtils.plResolution(model, sb, verbose);
-        if (!result) sb.setLength(0);
+        boolean result = ResolutionUtils.plResolution(model, sb);
+        if (!result || !verbose) sb.setLength(0);
         sb.append(model.getGoalClause()).append(" is ").append(result ? "true" : "unknown");
         System.out.println(sb.toString());
     }
@@ -90,9 +90,9 @@ public class Solution {
                                 .map(Literal::new)
                                 .collect(Collectors.toList()), index++);
                 Command command = null;
-                if (comm.equals("+")) command = new AddCommand(model);
-                if (comm.equals("-")) command = new RemoveCommand(model);
-                if (comm.equals("?")) command = new QueryCommand(model, verbose);
+                if (comm.equals("+")) command = new AddCommand(model, false);
+                if (comm.equals("-")) command = new RemoveCommand(model, false);
+                if (comm.equals("?")) command = new QueryCommand(model, false, verbose);
                 command.actionPerformed(clause);
             }
         }

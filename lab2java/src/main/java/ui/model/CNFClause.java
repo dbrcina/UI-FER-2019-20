@@ -1,9 +1,6 @@
 package ui.model;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class CNFClause {
 
@@ -11,7 +8,8 @@ public class CNFClause {
     private final int index;
 
     public CNFClause(Collection<Literal> literals, int index) {
-        this.literals = literals.stream().map(Literal::copy).collect(Collectors.toSet());
+        //this.literals = literals.stream().map(Literal::copy).collect(Collectors.toSet());
+        this.literals = new HashSet<>(literals);
         this.index = index;
     }
 
@@ -23,13 +21,13 @@ public class CNFClause {
         return index;
     }
 
-    public CNFClause negate() {
-        literals.forEach(Literal::negate);
-        return this;
-    }
-
-    public CNFClause nNegate() {
-        return copy().negate();
+    public Collection<CNFClause> negate() {
+        Collection<CNFClause> clauses = new LinkedList<>();
+        int index = this.index;
+        for (Literal literal : literals) {
+            clauses.add(new CNFClause(Arrays.asList(literal.nNegate()), index++));
+        }
+        return clauses;
     }
 
     public CNFClause copy() {
@@ -48,10 +46,7 @@ public class CNFClause {
     }
 
     public boolean containsLiteral(Literal l) {
-        for (Literal literal : literals) {
-            if (literal.equals(l)) return true;
-        }
-        return false;
+        return literals.contains(l);
     }
 
     @Override

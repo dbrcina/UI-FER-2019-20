@@ -5,14 +5,16 @@ import ui.model.PLModel;
 
 public class AddCommand extends Command {
 
-    public AddCommand(PLModel model) {
-        super(model);
+    public AddCommand(PLModel model, boolean testing) {
+        super(model, testing);
     }
 
     @Override
     public void actionPerformed(CNFClause clause) {
         model.addClause(clause);
-        System.out.println("added " + clause);
+        if (!testing) {
+            System.out.println("added " + clause);
+        }
     }
 
 }

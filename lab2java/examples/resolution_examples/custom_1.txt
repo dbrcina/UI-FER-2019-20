@@ -1,0 +1,6 @@
+~C  v  B
+~B  v  E
+~E  v  B
+ C
+~D  v  ~E
+~D  v  ~A

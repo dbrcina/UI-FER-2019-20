@@ -5,14 +5,16 @@ import ui.model.PLModel;
 
 public class RemoveCommand extends Command {
 
-    public RemoveCommand(PLModel model) {
-        super(model);
+    public RemoveCommand(PLModel model, boolean testing) {
+        super(model, testing);
     }
 
     @Override
     public void actionPerformed(CNFClause clause) {
         model.removeClause(clause);
-        System.out.println("removed " + clause);
+        if (!testing) {
+            System.out.println("removed " + clause);
+        }
     }
 
 }

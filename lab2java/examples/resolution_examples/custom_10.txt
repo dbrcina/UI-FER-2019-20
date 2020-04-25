@@ -1,0 +1,7 @@
+~P v Q  
+P v ~R 
+~Q v Q
+~P v P
+~R v R
+~Q  v  ~R
+~P v ~R

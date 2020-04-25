@@ -1,6 +1,7 @@
 package ui.model;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Propositional logic model.
@@ -11,7 +12,7 @@ public class PLModel {
     private CNFClause goalClause;
 
     public PLModel(Collection<CNFClause> clauses, CNFClause goalClause) {
-        this.clauses = clauses;
+        this.clauses = new HashSet<>(clauses);
         this.goalClause = goalClause;
     }
 

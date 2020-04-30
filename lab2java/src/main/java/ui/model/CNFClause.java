@@ -8,7 +8,6 @@ public class CNFClause {
     private final int index;
 
     public CNFClause(Collection<Literal> literals, int index) {
-        //this.literals = literals.stream().map(Literal::copy).collect(Collectors.toSet());
         this.literals = new HashSet<>(literals);
         this.index = index;
     }
@@ -28,10 +27,6 @@ public class CNFClause {
             clauses.add(new CNFClause(Arrays.asList(literal.nNegate()), index++));
         }
         return clauses;
-    }
-
-    public CNFClause copy() {
-        return new CNFClause(literals, index);
     }
 
     public boolean isSubsumedBy(CNFClause other) {
@@ -57,10 +52,10 @@ public class CNFClause {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CNFClause)) return false;
-        CNFClause clause = (CNFClause) o;
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof CNFClause)) return false;
+        CNFClause clause = (CNFClause) other;
         return literals.equals(clause.literals);
     }
 

@@ -45,10 +45,10 @@ public class Literal {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Literal)) return false;
-        Literal literal = (Literal) o;
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof Literal)) return false;
+        Literal literal = (Literal) other;
         return isNegated == literal.isNegated &&
                 name.equals(literal.name);
     }

@@ -4,10 +4,7 @@ import ui.model.CNFClause;
 import ui.model.Literal;
 import ui.model.PLModel;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -24,8 +21,8 @@ public class ResolutionUtils {
         sb.append("=============").append("\n");
         int index = goalClause.getIndex() + negatedGoalClause.size();
         while (true) {
-            allClauses.removeIf(CNFClause::isTautology);
             sOs.removeIf(CNFClause::isTautology);
+            allClauses.removeIf(CNFClause::isTautology);
             Collection<Entry<CNFClause, CNFClause>> clausePairs = selectClauses(allClauses, sOs);
             if (clausePairs.isEmpty()) {
                 return false;
@@ -51,7 +48,6 @@ public class ResolutionUtils {
                 if (resolvents.isEmpty()) {
                     return false;
                 }
-
                 for (CNFClause resolvent : resolvents) {
                     allClauses.removeIf(c -> c.isSubsumedBy(resolvent));
                     sOs.removeIf(c -> c.isSubsumedBy(resolvent));
@@ -64,12 +60,13 @@ public class ResolutionUtils {
 
     private static Collection<Entry<CNFClause, CNFClause>> selectClauses(
             Collection<CNFClause> clauses, Collection<CNFClause> sOs) {
-        Collection<Entry<CNFClause, CNFClause>> clausePairs = new HashSet<>();
-        for (CNFClause clause : clauses) {
-            for (CNFClause sOsClause : sOs) {
-                for (Literal l : sOsClause.getLiterals()) {
-                    if (clause.containsLiteral(l.nNegate())) {
+        Collection<Entry<CNFClause, CNFClause>> clausePairs = new LinkedHashSet<>();
+        for (CNFClause sOsClause : sOs) {
+            for (CNFClause clause : clauses) {
+                for (Literal l : clause.getLiterals()) {
+                    if (sOsClause.containsLiteral(l.nNegate())) {
                         clausePairs.add(new AbstractMap.SimpleEntry<>(clause, sOsClause));
+                        break;
                     }
                 }
             }
@@ -78,7 +75,7 @@ public class ResolutionUtils {
     }
 
     private static Collection<CNFClause> plResolve(CNFClause c1, CNFClause c2, int index) {
-        Collection<CNFClause> resolvents = new HashSet<>();
+        Collection<CNFClause> resolvents = new LinkedHashSet<>();
         Collection<Literal> literals = new LinkedList<>();
         Collection<Literal> literals1 = c1.getLiterals();
         Collection<Literal> literals2 = c2.getLiterals();

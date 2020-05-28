@@ -5,9 +5,9 @@ import java.util.Collection;
 public class Sample {
 
     private final Collection<Feature> features;
-    private final String classLabel;
+    private final ClassLabel classLabel;
 
-    public Sample(Collection<Feature> features, String classLabel) {
+    public Sample(Collection<Feature> features, ClassLabel classLabel) {
         this.features = features;
         this.classLabel = classLabel;
     }
@@ -16,7 +16,7 @@ public class Sample {
         return features;
     }
 
-    public String getClassLabel() {
+    public ClassLabel getClassLabel() {
         return classLabel;
     }
 

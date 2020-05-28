@@ -1,5 +1,6 @@
 package ui.util;
 
+import ui.model.ClassLabel;
 import ui.model.Configuration;
 import ui.model.Feature;
 import ui.model.Sample;
@@ -16,7 +17,7 @@ public class Utils {
     private static final String CSV_SEPARATOR = "\\s*,\\s*";
     private static final String CFG_SEPARATOR = "\\s*=\\s*";
 
-    public static Collection<Sample> samplesFromCSV(Path csvFile) {
+    public static Collection<Sample> samplesFromCSV(Path csvFile, boolean extendFeatures) {
         try {
             Collection<Sample> samples = new ArrayList<>();
             List<String> lines = Files.readAllLines(csvFile);
@@ -25,9 +26,15 @@ public class Utils {
                 String[] data = lines.get(i).strip().split(CSV_SEPARATOR);
                 Collection<Feature> features = new ArrayList<>();
                 for (int j = 0; j < data.length - 1; j++) {
-                    features.add(new Feature(header[j], data[j]));
+                    Feature feature = new Feature(header[j], data[j]);
+                    features.add(feature);
+                    if (extendFeatures) {
+                        Feature.extendForFeature(feature.getName(), feature.getValue());
+                    }
                 }
-                samples.add(new Sample(features, data[data.length - 1]));
+                ClassLabel classLabel = new ClassLabel(header[header.length - 1], data[data.length - 1]);
+                ClassLabel.extendValues(classLabel.getValue());
+                samples.add(new Sample(features, classLabel));
             }
             return samples;
         } catch (IOException e) {

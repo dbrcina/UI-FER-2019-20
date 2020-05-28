@@ -63,10 +63,10 @@ public class Utils {
                     case "num_trees":
                         config.setNumTrees(Integer.parseInt(parts[1]));
                         break;
-                    case "feature_ration":
+                    case "feature_ratio":
                         config.setFeatureRation(Double.parseDouble(parts[1]));
                         break;
-                    case "example_ration":
+                    case "example_ratio":
                         config.setExampleRation(Double.parseDouble(parts[1]));
                         break;
                 }

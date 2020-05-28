@@ -12,18 +12,48 @@ public class ID3 implements MLAlgorithm {
 
     private final Configuration config;
     private final StringBuilder sbIG = new StringBuilder();
-    private TreeNode<String> root;
+    private final TreeNode<String>[] roots;
 
     public ID3(Configuration config) {
         this.config = config;
+        roots = new TreeNode[config.getNumTrees()];
     }
 
     @Override
     public void fit(Collection<Sample> dataset) {
-        Collection<Sample> samples = new ArrayList<>(dataset);
-        Collection<String> featureNames = new TreeSet<>(Feature.allFeatureNames());
-        root = id3(samples, samples, featureNames, 0, null);
-        System.out.println(TreeNode.constructPathByNodes(root));
+        List<Sample> samples = new ArrayList<>(dataset);
+        Set<String> featureNames = new TreeSet<>(Feature.allFeatureNames());
+        if (config.getModel() == Configuration.Model.ID3) {
+            roots[0] = id3(samples, samples, featureNames, 0, null);
+        } else {
+            Random rand = new Random();
+            StringBuilder sb = new StringBuilder();
+            List<String> featureNamesList = new ArrayList<>(featureNames);
+            for (int i = 0; i < roots.length; i++) {
+                List<Sample> samplesList = new ArrayList<>();
+                List<String> features = new ArrayList<>();
+                List<Integer> indexes = new ArrayList<>();
+                for (int j = 0; j < Math.round(config.getExampleRation() * dataset.size()); j++) {
+                    int index = rand.nextInt(dataset.size());
+                    samplesList.add(samples.get(index));
+                    indexes.add(index);
+                }
+                for (int j = 0; j < Math.round(config.getFeatureRation() * featureNames.size()); j++) {
+                    features.add(featureNamesList.get(rand.nextInt(featureNames.size())));
+                }
+                roots[i] = id3(samplesList, samplesList, features, 0, null);
+                features.forEach(f -> sb.append(f).append(" "));
+                sb.setLength(sb.length() - 1);
+                sb.append("\n");
+                indexes.forEach(ind -> sb.append(ind).append(" "));
+                sb.setLength(sb.length() - 1);
+                System.out.println(sb);
+                sb.setLength(0);
+            }
+        }
+        if (config.getModel() == Configuration.Model.ID3) {
+            System.out.println(TreeNode.constructPathByNodes(roots[0]));
+        }
         sbIG.setLength(sbIG.length() - 1);
         if (config.getMode() == Configuration.Mode.VERBOSE) {
             System.out.println(sbIG.toString());
@@ -39,7 +69,21 @@ public class ID3 implements MLAlgorithm {
     }
 
     private String predictClassLabelForSample(Sample sample) {
-        return predictRecursive(root, new TreeSet<>(sample.getFeatures()));
+        String[] predictions = new String[roots.length];
+        for (int i = 0; i < predictions.length; i++) {
+            predictions[i] = predictRecursive(roots[i], new TreeSet<>(sample.getFeatures()));
+        }
+        Map<String, Integer> stats = new HashMap<>();
+        for (String pred : predictions) {
+            stats.put(pred, stats.getOrDefault(pred, 0) + 1);
+        }
+        return stats.entrySet().stream().min((o1, o2) -> {
+            int r = o2.getValue().compareTo(o1.getValue());
+            if (r == 0) {
+                r = o1.getKey().compareTo(o2.getKey());
+            }
+            return r;
+        }).get().getKey();
     }
 
     private String predictRecursive(TreeNode<String> node, Collection<Feature> features) {

@@ -11,10 +11,7 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class Solution {
 
@@ -23,7 +20,6 @@ public class Solution {
             System.out.println("Program ocekuje tri datoteke.");
             return;
         }
-
         Collection<Sample> trainingDataset = Utils.samplesFromCSV(Paths.get(args[0]), true);
         Collection<Sample> testingDataset = Utils.samplesFromCSV(Paths.get(args[1]), false);
         Configuration config = Utils.configurationFromCFG(Paths.get(args[2]));

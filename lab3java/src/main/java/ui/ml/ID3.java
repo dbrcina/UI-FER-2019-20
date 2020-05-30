@@ -64,26 +64,31 @@ public class ID3 implements MLAlgorithm {
     @Override
     public Collection<String> predict(Collection<Sample> dataset) {
         Collection<String> predictions = new ArrayList<>();
-        dataset.forEach(sample -> predictions.add(predictClassLabelForSample(sample)));
+        String[][] predictionsByTrees = new String[roots.length][dataset.size()];
+        for (int i = 0; i < predictionsByTrees.length; i++) {
+            int j = 0;
+            for (Sample sample : dataset) {
+                predictionsByTrees[i][j++] = predictClassLabelForSample(sample, roots[i]);
+            }
+        }
+        for (int j = 0; j < dataset.size(); j++) {
+            Map<String, Integer> stats = new HashMap<>();
+            for (String[] predictionsByTree : predictionsByTrees) {
+                stats.put(predictionsByTree[j], stats.getOrDefault(predictionsByTree[j], 0) + 1);
+            }
+            predictions.add(stats.entrySet().stream().min((o1, o2) -> {
+                int r = o2.getValue().compareTo(o1.getValue());
+                if (r == 0) {
+                    r = o1.getKey().compareTo(o2.getKey());
+                }
+                return r;
+            }).get().getKey());
+        }
         return predictions;
     }
 
-    private String predictClassLabelForSample(Sample sample) {
-        String[] predictions = new String[roots.length];
-        for (int i = 0; i < predictions.length; i++) {
-            predictions[i] = predictRecursive(roots[i], new TreeSet<>(sample.getFeatures()));
-        }
-        Map<String, Integer> stats = new HashMap<>();
-        for (String pred : predictions) {
-            stats.put(pred, stats.getOrDefault(pred, 0) + 1);
-        }
-        return stats.entrySet().stream().min((o1, o2) -> {
-            int r = o2.getValue().compareTo(o1.getValue());
-            if (r == 0) {
-                r = o1.getKey().compareTo(o2.getKey());
-            }
-            return r;
-        }).get().getKey();
+    private String predictClassLabelForSample(Sample sample, TreeNode<String> root) {
+        return predictRecursive(root, new TreeSet<>(sample.getFeatures()));
     }
 
     private String predictRecursive(TreeNode<String> node, Collection<Feature> features) {
@@ -128,7 +133,7 @@ public class ID3 implements MLAlgorithm {
         String discriminativeFeatureName = findMostDiscriminativeFeatureName(samples, featureNames);
         Collection<String> filteredFeatureNames = featureNames.stream()
                 .filter(featureName -> !featureName.equals(discriminativeFeatureName))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(TreeSet::new));
         Collection<TreeNode<String>> children = new ArrayList<>();
         for (String featureValue : Feature.valuesForFeature(discriminativeFeatureName)) {
             Feature f = new Feature(discriminativeFeatureName, featureValue);
